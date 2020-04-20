@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Configure an SSH proxy for Ansible Tower</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">It's automatic! </a></h1>
+                <nav><ul>
+                    <li><a href="/category/personal.html">Personal</a></li>
+                    <li class="active"><a href="/category/tower.html">Tower</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/configure-an-ssh-proxy-for-ansible-tower.html" rel="bookmark"
+           title="Permalink to Configure an SSH proxy for Ansible Tower">Configure an SSH proxy for Ansible Tower</a></h1>
+    </header>
+
+    <div class="entry-content">
+        <abbr class="published" title="2019-04-19T00:00:00+02:00">
+                Published: Fri 19 April 2019
+        </abbr>
+
+<BR>In <a href="/category/tower.html">Tower</a>.<P>
+      <p>In my lab, some of the VMs I provision are only accessible through a jump host. This means Tower needs to connect to the jump host first then to the target VMs in order to run playbooks. </p>
+<p>One way to enable Tower to reach isolated nodes is to use a dedicated ansible host, that is both accessible by Tower and able to reach the target network. This is called an isolated node and the way to set it up is described at: <a href="http://docs.ansible.com/ansible-tower/latest/html/administration/clustering.html#isolated-instance-groups">6.3. Isolated Instance Groups</a></p>
+<p>Isolated nodes will have Ansible installed on them, and sometimes that's not possible on the jump host. But you can also configure Tower to use the jump host as an ssh proxy: Tower will ssh to the jump host and from it access the targets. This is documented at: <a href="http://docs.ansible.com/ansible-tower/latest/html/administration/tipsandtricks.html#setting-up-a-jump-host-to-use-with-tower">22.6. Setting up a jump host to use with Tower</a></p>
+<p>I had some problems getting it to work so decided to document what I did. </p>
+<h3>1. Disable PRoot</h3>
+<p>As described in the "Tower Tips and Tricks" official documentation page.</p>
+<h3>2. Add SSH connection arguments at the inventory level</h3>
+<p>I added the following variables at the inventory level:</p>
+<div class="highlight"><pre><span></span><span class="n">ansible_connection</span><span class="o">:</span> <span class="n">ssh</span>
+<span class="n">ansible_ssh_common_args</span><span class="o">:</span> <span class="s1">&#39;-o ProxyCommand=&quot;ssh -W %h:%p -q jump-host-user@jump-host.example.com&quot;&#39;</span>
+</pre></div>
+
+
+<p>Defining those at the inventory level means that only the hosts of that inventory will be using the jump host. And it also means you don't have to edit SSH configuration files on the Tower host.</p>
+<h3>3. Add the SSH private key of the jump host to Tower</h3>
+<p>Tower will use it to ssh to the jump host: copy the <code>id_rsa</code> file of the jump host on the tower host into <code>/var/lib/awx/.ssh/</code>
+Make sure it has the following user, group and permissions:</p>
+<div class="highlight"><pre><span></span><span class="err">-rw-------. 1 awx awx 1679 Apr 30 16:37 id_rsa</span>
+</pre></div>
+
+
+<p>You can also put the key in another directory and specify its path using the -i switch of the ProxyCommand.</p>
+<h3>4. Add the credentials for the target machine</h3>
+<p>Once connected to the jump host, Tower needs to connect to the target machine. 
+I defined a Tower Machine Credential, in my case for the root user (of the target node) using a password to connect.
+You can also use an ssh key if your target nodes support it, as with any machine credentials.</p>
+<h3>5. Define the Job Template</h3>
+<p>The tower template needs to have: </p>
+<ul>
+<li>The inventory used in 2</li>
+<li>The machine credential defined in 4.</li>
+</ul>
+<p>And it works ! Thanks to <a href="https://github.com/victorock">@victorock</a> ;)</p>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="https://twitter.com/automaticdavid">@automaticdavid</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is slightly modified from <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

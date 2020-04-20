@@ -1,0 +1,8 @@
+        <abbr class="published" title="{{ article.date.isoformat() }}">
+                Published: {{ article.locale_date }}
+        </abbr>
+
+<BR>In <a href="{{ SITEURL }}/{{ article.category.url }}">{{ article.category }}</a>.<P>
+{% include 'taglist.html' %}
+{% import 'translations.html' as translations with context %}
+{{ translations.translations_for(article) }}

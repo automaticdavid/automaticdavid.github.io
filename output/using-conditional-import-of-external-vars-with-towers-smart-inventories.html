@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Using conditional import of external vars with Tower's Smart Inventories</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">It's automatic! </a></h1>
+                <nav><ul>
+                    <li><a href="/category/personal.html">Personal</a></li>
+                    <li class="active"><a href="/category/tower.html">Tower</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/using-conditional-import-of-external-vars-with-towers-smart-inventories.html" rel="bookmark"
+           title="Permalink to Using conditional import of external vars with Tower's Smart Inventories">Using conditional import of external vars with Tower's Smart Inventories</a></h1>
+    </header>
+
+    <div class="entry-content">
+        <abbr class="published" title="2019-10-20T00:00:00+02:00">
+                Published: Sun 20 October 2019
+        </abbr>
+
+<BR>In <a href="/category/tower.html">Tower</a>.<P>
+      <p>The problem we are trying to solve is that smart inventories in Tower do not include groups, and therefore we can't use group_vars defined at the inventories level. Since host_vars are imported we will use a host_var to trigger import of the wanted vars.</p>
+<h2>1- VM Properties</h2>
+<p>We're going to use the "Custom Attributes" feature of vSphere to inherit a host_vars. Each VM has a custom attribute <code>dcl-custom-attr</code> but with a diferent value for each of our test VMs:</p>
+<p><img alt="VM Custom prop" src="/images/custom-prop.png"></p>
+<p><img alt="VM Custom prop" src="/images/custom-prop-2.png"></p>
+<h2>2- Dynamic Inventory &amp; Smart Inventory in Tower</h2>
+<p>We're using the VMware dynamic inventory with source variables: </p>
+<p><img alt="VM Custom prop" src="/images/inv.png"></p>
+<p>We want to test importing vars for hosts sourced from a smart inventory so we define a smart inventory:</p>
+<p><img alt="VM Custom prop" src="/images/smart.png"></p>
+<p><img alt="VM Custom prop" src="/images/smart-hosts.png"></p>
+<p>The VMs in the smart inventory show the custom attributes as host_vars:</p>
+<p><img alt="VM Custom prop" src="/images/vars.png"></p>
+<h2>3- Conditional include of vars</h2>
+<p>Now we can use the following playbook:</p>
+<div class="highlight"><pre><span></span><span class="x">---</span>
+<span class="x">- name: Conditional vars inclusion based on host_vars </span>
+<span class="x">  hosts: all</span>
+<span class="x">  gather_facts: no</span>
+
+<span class="x">  tasks:</span>
+
+<span class="x">    - name: Extract Custom Prop Value</span>
+<span class="x">      set_fact:</span>
+<span class="x">        vm_props: &quot;</span><span class="cp">{{</span> <span class="nv">value</span> <span class="o">|</span> <span class="nf">map</span><span class="o">(</span><span class="nv">attribute</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="o">)|</span> <span class="nf">list</span> <span class="cp">}}</span><span class="x">&quot;</span>
+
+<span class="x">    - name: Include for first group</span>
+<span class="x">      include_vars:</span>
+<span class="x">        file: first.yml</span>
+<span class="x">      when: &#39;&quot;dcl-1&quot; in vm_props&#39;</span>
+
+<span class="x">    - name: Include for second group</span>
+<span class="x">      include_vars:</span>
+<span class="x">        file: second.yml</span>
+<span class="x">      when: &#39;&quot;dcl-2&quot; in vm_props&#39;</span>
+
+<span class="x">    - name: Display imported value</span>
+<span class="x">      debug: </span>
+<span class="x">        msg: &quot;</span><span class="cp">{{</span> <span class="nv">my_imported_value</span> <span class="cp">}}</span><span class="x">&quot;</span>
+</pre></div>
+
+
+<p>Depending on the value of the host_var we include a file or another, that defines the variable <code>my_imported_value</code> but with different values. <BR>
+See: https://github.com/automaticdavid/set_vars</p>
+<p>We define the associated Tower template:</p>
+<p><img alt="VM Custom prop" src="/images/template.png"></p>
+<p>Execution yields the inclusion of the var with the correct value for each VM: </p>
+<p><img alt="VM Custom prop" src="/images/result.png"></p>
+<p>We can use the same mechanism to include different vars for each VM.</p>
+<p>This could be used in a role that would get included at the begining of each playbook, or with a Tower Workflow. </p>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="https://twitter.com/automaticdavid">@automaticdavid</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is slightly modified from <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
