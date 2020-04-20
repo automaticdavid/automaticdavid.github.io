@@ -3,39 +3,40 @@
 <head>
         <meta charset="utf-8" />
         <title>It's automatic! - Tower</title>
-        <link rel="stylesheet" href="/theme/css/main.css" />
+        <link rel="stylesheet" href="https://automaticdavid.github.io/theme/css/main.css" />
+        <link href="https://automaticdavid.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="It's automatic! Atom Feed" />
 </head>
 
 <body id="index" class="home">
         <header id="banner" class="body">
-                <h1><a href="/">It's automatic! </a></h1>
+                <h1><a href="https://automaticdavid.github.io/">It's automatic! </a></h1>
                 <nav><ul>
-                    <li><a href="/category/personal.html">Personal</a></li>
-                    <li class="active"><a href="/category/tower.html">Tower</a></li>
+                    <li><a href="https://automaticdavid.github.io/category/personal.html">Personal</a></li>
+                    <li class="active"><a href="https://automaticdavid.github.io/category/tower.html">Tower</a></li>
                 </ul></nav>
         </header><!-- /#banner -->
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/using-conditional-import-of-external-vars-with-towers-smart-inventories.html">Using conditional import of external vars with Tower's Smart Inventories</a></h1>
+                    <h1 class="entry-title"><a href="https://automaticdavid.github.io/using-conditional-import-of-external-vars-with-towers-smart-inventories.html">Using conditional import of external vars with Tower's Smart Inventories</a></h1>
         <abbr class="published" title="2019-10-20T00:00:00+02:00">
                 Published: Sun 20 October 2019
         </abbr>
 
-<BR>In <a href="/category/tower.html">Tower</a>.<P>
+<BR>In <a href="https://automaticdavid.github.io/category/tower.html">Tower</a>.<P>
 <p>The problem we are trying to solve is that smart inventories in Tower do not include groups, and therefore we can't use group_vars defined at the inventories level. Since host_vars are imported we will use a host_var to trigger import of the wanted vars.</p>
 <h2>1- VM Properties</h2>
 <p>We're going to use the "Custom Attributes" feature of vSphere to inherit a host_vars. Each VM has a custom attribute <code>dcl-custom-attr</code> but with a diferent value for each of our test VMs:</p>
-<p><img alt="VM Custom prop" src="/images/custom-prop.png"></p>
-<p><img alt="VM Custom prop" src="/images/custom-prop-2.png"></p>
+<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/custom-prop.png"></p>
+<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/custom-prop-2.png"></p>
 <h2>2- Dynamic Inventory &amp; Smart Inventory in Tower</h2>
 <p>We're using the VMware dynamic inventory with source variables: </p>
-<p><img alt="VM Custom prop" src="/images/inv.png"></p>
+<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/inv.png"></p>
 <p>We want to test importing vars for hosts sourced from a smart inventory so we define a smart inventory:</p>
-<p><img alt="VM Custom prop" src="/images/smart.png"></p>
-<p><img alt="VM Custom prop" src="/images/smart-hosts.png"></p>
+<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/smart.png"></p>
+<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/smart-hosts.png"></p>
 <p>The VMs in the smart inventory show the custom attributes as host_vars:</p>
-<p><img alt="VM Custom prop" src="/images/vars.png"></p>
+<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/vars.png"></p>
 <h2>3- Conditional include of vars</h2>
 <p>Now we can use the following playbook:</p>
 <div class="highlight"><pre><span></span><span class="x">---</span>
@@ -68,9 +69,9 @@
 <p>Depending on the value of the host_var we include a file or another, that defines the variable <code>my_imported_value</code> but with different values. <BR>
 See: https://github.com/automaticdavid/set_vars</p>
 <p>We define the associated Tower template:</p>
-<p><img alt="VM Custom prop" src="/images/template.png"></p>
+<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/template.png"></p>
 <p>Execution yields the inclusion of the var with the correct value for each VM: </p>
-<p><img alt="VM Custom prop" src="/images/result.png"></p>
+<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/result.png"></p>
 <p>We can use the same mechanism to include different vars for each VM.</p>
 <p>This could be used in a role that would get included at the begining of each playbook, or with a Tower Workflow. </p>                </article>
             </aside><!-- /#featured -->
@@ -81,7 +82,7 @@ See: https://github.com/automaticdavid/set_vars</p>
 
             <li><article class="hentry">
                 <header>
-                    <h1><a href="/configure-an-ssh-proxy-for-ansible-tower.html" rel="bookmark"
+                    <h1><a href="https://automaticdavid.github.io/configure-an-ssh-proxy-for-ansible-tower.html" rel="bookmark"
                            title="Permalink to Configure an SSH proxy for Ansible Tower">Configure an SSH proxy for Ansible Tower</a></h1>
                 </header>
 
@@ -90,10 +91,10 @@ See: https://github.com/automaticdavid/set_vars</p>
                 Published: Fri 19 April 2019
         </abbr>
 
-<BR>In <a href="/category/tower.html">Tower</a>.<P>
+<BR>In <a href="https://automaticdavid.github.io/category/tower.html">Tower</a>.<P>
                 <p>In my lab, some of the VMs I provision are only accessible through a jump host. This means Tower needs to connect to the jump host first then to the target VMs in order to run playbooks. </p>
 <p>One way to enable Tower to reach isolated nodes is to use a …</p>
-                <a class="readmore" href="/configure-an-ssh-proxy-for-ansible-tower.html">read more</a>
+                <a class="readmore" href="https://automaticdavid.github.io/configure-an-ssh-proxy-for-ansible-tower.html">read more</a>
                 </div><!-- /.entry-content -->
             </article></li>
                 </ol><!-- /#posts-list -->
@@ -102,6 +103,7 @@ See: https://github.com/automaticdavid/set_vars</p>
                 <div class="social">
                         <h2>social</h2>
                         <ul>
+                            <li><a href="https://automaticdavid.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
 
                             <li><a href="https://twitter.com/automaticdavid">@automaticdavid</a></li>
                         </ul>
