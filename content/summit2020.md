@@ -34,7 +34,7 @@ Or alternatively at the same time slot:
 **Optimizing DevSecOps: Visibility & control with IBM & Red Hat**   
 <https://summit.redhat.com/conference/sessions/details/eb0e068b-4dee-4d55-b6b2-e4830e11f3ba?sb=false>   
 
-Then for Wednesday afernoon:
+Then for Wednesday afternoon:
 
 * Wednesday, April 29, 1:00 p.m.   
 **3 ways to reduce remediation time to cyberattacks with Ansible security automation**   
@@ -48,9 +48,13 @@ Or alternatively at the same time slot:
 **Case study: Changing governed IT processes to automation, and reinventing IT Ops as site reliability engineering**   
 <https://summit.redhat.com/conference/sessions/details/5272be68-7da0-4ba9-af89-9178c92af69f?sb=false>
 
-You can also register for labs where you'll get your own test infra to use in a guided session. More on that later I hope! 
+You can also register for labs where you'll get your own test infra to use in a guided session, for example this one:
 
+* Tuesday, April 28, 7:00 p.m.  
+**Demo of using Red Hat Insights to proactively keep your Red Hat Enterprise Linux environment stable, secure and compliant**  
+<https://summit.redhat.com/conference/sessions/details/02f9ba4a-7db6-43c3-9f9f-9f5ea966b48f?sb=false>  
 
+See you (virtually) at the Summit !
 
 
 
