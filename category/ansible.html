@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>It's automatic! - Ansible</title>
+        <link rel="stylesheet" href="https://automaticdavid.github.io/theme/css/main.css" />
+        <link href="https://automaticdavid.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="It's automatic! Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="https://automaticdavid.github.io/">It's automatic! </a></h1>
+                <nav><ul>
+                    <li class="active"><a href="https://automaticdavid.github.io/category/ansible.html">Ansible</a></li>
+                    <li><a href="https://automaticdavid.github.io/category/personal.html">Personal</a></li>
+                    <li><a href="https://automaticdavid.github.io/category/tower.html">Tower</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="https://automaticdavid.github.io/webinar-05-2020.html">Using Ansible to manage ios devices</a></h1>
+        <abbr class="published" title="2020-05-15T00:00:00+02:00">
+                Published: Fri 15 May 2020
+        </abbr>
+
+<BR>In <a href="https://automaticdavid.github.io/category/ansible.html">Ansible</a>.<P>
+Translations:
+        <a href="https://automaticdavid.github.io/webinar-05-2020-fr.html" hreflang="fr">fr</a>
+<p>Here's a small write up on the demo I did for our "Beyond Linux, Automate all the things" webinar.</p>
+<p>The code I used is at:<br>
+<a href="https://github.com/automaticdavid/webinar_052020">https://github.com/automaticdavid/webinar_052020</a></p>
+<p>The security workshop can be accessed at:<br>
+<a href="https://ansible.github.io/workshops/">https://ansible.github.io/workshops/</a></p>
+<p>The webinar replay (in french) is at:<br>
+<a href="https://www.redhat.com/en/events/webinar/red-hat-ansible-automation-platform-cloud-reseau-iot-lautomatisation-au-dela-des-systemes-linux">L’automatisation au delà des systèmes Linux</a></p>
+<h2>1- Using facts &amp; ios_command</h2>
+<p><img alt="webinar1_demo_1" src="https://automaticdavid.github.io/images/webinar1_demo_1.gif"></p>
+<p>In this first part I showed the inventory used and how we can use inventory groups. In the <code>gather_ios_data.yml</code> playbook, note that I'm using <code>gather_facts: yes</code> for network devices which is new with Ansible 2.9. This allows me to use the <code>ansible_net_*</code> directly in my play!</p>
+<p>I then show how to use <code>ios_command</code> to run commands and register the output. I use this to diplay snmp settings on my 4 routers.</p>
+<p>The <code>config_routers.yml</code> playbook allows me to change those snmp settings. Note that when I run it 2 times, the second time does nothing: <code>changed=0</code> is displayed and all the nodes are green OK. That's <strong>indempotency</strong>: Ansible doesn't do anything if we're already in the state we want. </p>
+<p>I then log on to the device rtr1 and make a manual change. When I run the playbook again, Ansible corrects that one thing only.</p>
+<h2>2- Ressource modules &amp; Source of truth.</h2>
+<p><img alt="webinar1_demo_2" src="https://automaticdavid.github.io/images/webinar1_demo_2.gif"></p>
+<p>To take this a bit further, I then use the <code>ios_facts</code> modules, and with Ansible 2.9 this comes with a powerfull feature: Ansible is able to extract information from my already configured devices and produce structured data. This is shown when I execute <code>gather_ios_resource.yml</code> and display the L3 interfaces configuration as a YAML list of interfaces:</p>
+<p><img alt="webinar1_demo_2" src="https://automaticdavid.github.io/images/webinar1_demo2_list.png"></p>
+<p>Each list element (starting with a dash) is a dictionnary that contains keys: in the example "ipv4" and "name". The "ipv4" key contains a list, here with only one element. This element is also a dictionary, with only one key: "address".<br>
+This makes it very easy to read and modify configuration values. </p>
+<p>As a matter of fact the playbook also writes these values in a <code>host_vars</code> directory. In the demo I then make a change in these values and run the <code>config_l3.yml</code> playbook in check mode first: this tells us what Ansible would change but doesn't actually change anything. Then I apply the change by running in normal mode. When I run the <code>gather_ios_resource.yml</code> again, I can see that the change was made on rtr1. The local source of truth is not updated: it's already up to date.  </p>
+<p>What we see here is that Ansible is able to produce structured configuration data (with the <code>ios_facts</code> module) and then consume this data to apply configuration changes (with the <code>ios_l3_interfaces</code> module). Since the configuration is in YAML, it can be managed as code in git, with the inventory itself. This means that you have full tracability of changes, you can re-apply any version of your infrastrcture or manage it with a gitflow. </p>
+<p>As always with Ansible, it starts with some very simple concepts but delivers powerfull ways of doing things. </p>
+<p>Find out more about ressource modules in this Ansible Automates talk by <a href="https://twitter.com/ipvsean?lang=en">@IPvSean</a>:<br>
+<a href="https://www.ansible.com/2019-ansible-network-automation-resource-modules">https://www.ansible.com/2019-ansible-network-automation-resource-modules</a> </p>                </article>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="https://automaticdavid.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/automaticdavid">@automaticdavid</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is slightly modified from <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

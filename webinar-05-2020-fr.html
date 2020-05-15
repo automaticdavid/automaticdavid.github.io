@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+        <meta charset="utf-8" />
+        <title>Gérer des équipments IOS avec Ansible</title>
+        <link rel="stylesheet" href="https://automaticdavid.github.io/theme/css/main.css" />
+        <link href="https://automaticdavid.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="It's automatic! Atom Feed" />
+      <link rel="alternate" hreflang="en" href="https://automaticdavid.github.io/webinar-05-2020.html">
+
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="https://automaticdavid.github.io/">It's automatic! </a></h1>
+                <nav><ul>
+                    <li class="active"><a href="https://automaticdavid.github.io/category/ansible.html">Ansible</a></li>
+                    <li><a href="https://automaticdavid.github.io/category/personal.html">Personal</a></li>
+                    <li><a href="https://automaticdavid.github.io/category/tower.html">Tower</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="https://automaticdavid.github.io/webinar-05-2020-fr.html" rel="bookmark"
+           title="Permalink to Gérer des équipments IOS avec Ansible">Gérer des équipments IOS avec Ansible</a></h1>
+    </header>
+
+    <div class="entry-content">
+        <abbr class="published" title="2020-05-15T00:00:00+02:00">
+                Published: Fri 15 May 2020
+        </abbr>
+
+<BR>In <a href="https://automaticdavid.github.io/category/ansible.html">Ansible</a>.<P>
+Translations:
+        <a href="https://automaticdavid.github.io/webinar-05-2020.html" hreflang="en">en</a>
+      <p>Ci dessous un petit résumé de la demo que j'ai effecuté lors de notre dernier webinar Red Hat "Automatiser au dela de Linux".   </p>
+<p>Le code de la demo réseau est à:<br>
+<a href="https://github.com/automaticdavid/webinar_052020">https://github.com/automaticdavid/webinar_052020</a></p>
+<p>Le workshop sécurité est decrit à: <br>
+<a href="https://ansible.github.io/workshops/">https://ansible.github.io/workshops/</a></p>
+<p>Le replay du webinar:<br>
+<a href="https://www.redhat.com/en/events/webinar/red-hat-ansible-automation-platform-cloud-reseau-iot-lautomatisation-au-dela-des-systemes-linux">L’automatisation au delà des systèmes Linux</a></p>
+<h2>1- Utiliser les facts &amp; ios_command</h2>
+<p><img alt="webinar1_demo_1" src="https://automaticdavid.github.io/images/webinar1_demo_1.gif"></p>
+<p>Dans cette première partie on regarde l'inventaire utilisé. Dans le playbook <code>gather_ios_data.yml</code> j'utilise <code>gather_facts: yes</code> pour les équipements réseau, ce qui est nouveau avec Ansible 2.9. Cela me permet d'utiliser les variables <code>ansible_net_*</code> directement. </p>
+<p>Ensuite j'utilise <code>ios_command</code> pour éxecuter une command IOS et récupérer le résultat, que j'utilise pour afficher la conf snmp des 4 routeurs. </p>
+<p>Le playbook <code>config_routers.yml</code> permet ensuite de changer cette config snmp. Notez que lors de la 2ème éxecution, Ansible affiche <code>changed=0</code> et toutes les machines sont en "OK vert". C'est l'indempotence: les equipements sont déjà dans l'état que l'on veut et Ansible ne fait rien quand il n'y a rien à faire.</p>
+<p>Ensuite je me connecte directement à un switch et je fais un changement manuel. Quand j'execute à nouveau mon playbook de config, seul ce changement là est corrigé. </p>
+<h2>2- Resource modules &amp; Source of truth.</h2>
+<p><img alt="webinar1_demo_2" src="https://automaticdavid.github.io/images/webinar1_demo_2.gif"></p>
+<p>Pour aller un peu plus loin j'utilise ensuite le module <code>ios_facts</code> et avec Ansible 2.9 cela permet d'extraire la configuration des swtiches existants sous la forme de données structurées. Quand j'execute le playbook <code>gather_ios_resource.yml</code> on voit que la configuration des interfaces L3 est affichée sous la forme d'une liste d'interfaces en YAML: </p>
+<p><img alt="webinar1_demo_2" src="https://automaticdavid.github.io/images/webinar1_demo2_list.png"></p>
+<p>Chaque élément de la liste (marqué par un tiret) est un dictionnaire qui contient des clés: dans cet exemple "ipv4" et "name". La clé "ipv4" contient une liste, qui ici n'a qu'un seul élément. Cet élément est aussi un dictionaire, qui n'a qu'une seule clé: "address". 
+Avec un peu d'habitude cette façon de représenter la configuration permet de lire et modifier les valeurs de façon simple et robuste.</p>
+<p>Le playbook écrit ces valeurs dans le repertoire <code>host_vars</code>. Dans la demo je change une valeur de configuration dans le fichier qui décrit le routeur rtr1 et j'execute le playbook <code>config_l3.yml</code> en mode "check". Ce mode fait qu'Ansible dit quels changements il ferait sans vraiment les faire. J'execute ensuite le changement et je vérifie qu'il a bien eu lieu avec le playbook <code>gather_ios_resource.yml</code>. Ce dernier ne modifie pas la source de verité car elle est deja à jour!</p>
+<p>Ce que cela montre c'est que avec le module <code>ios_facts</code>, Ansible est capable de produire des données structurées à partir de la configuration existante sur les switchs. Et qu'avec le module  <code>ios_l3_interfaces</code> on est capable de ré-utiliser ces données directement, pour modifier la configuration des équipements. Comme la configuration est en YAML, on peut la gérer comme du code dans git. Cela signifie qu'on a une traçabilité totale des changements, qu'on peut ré-appliquer n'importe quelle version, ou encore qu'on peut manager l'infrastructure réseau avec un gitflow. </p>
+<p>Plus d'info sur les resources modules dans cette conférence donnée par <a href="https://twitter.com/ipvsean?lang=en">@IPvSean</a>:<br>
+<a href="https://www.ansible.com/2019-ansible-network-automation-resource-modules">https://www.ansible.com/2019-ansible-network-automation-resource-modules</a> </p>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="https://automaticdavid.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/automaticdavid">@automaticdavid</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is slightly modified from <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
