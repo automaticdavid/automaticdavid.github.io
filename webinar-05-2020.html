@@ -43,7 +43,7 @@ Translations:
 <a href="https://www.redhat.com/en/events/webinar/red-hat-ansible-automation-platform-cloud-reseau-iot-lautomatisation-au-dela-des-systemes-linux">L’automatisation au delà des systèmes Linux</a></p>
 <h2>1- Using facts &amp; ios_command</h2>
 <p><img alt="webinar1_demo_1" src="https://automaticdavid.github.io/images/webinar1_demo_1.gif"></p>
-<p>In this first part I showed the inventory used and how we can use inventory groups. In the <code>gather_ios_data.yml</code> playbook, note that I'm using <code>gather_facts: yes</code> for network devices which is new with Ansible 2.9. This allows me to use the <code>ansible_net_*</code> directly in my play!</p>
+<p>In this first part I showed the inventory used and how we can use inventory groups. In the <code>gather_ios_data.yml</code> playbook, note that I'm using <code>gather_facts: yes</code> for network devices which is new with Ansible 2.9. This allows me to use the <code>ansible_net_*</code> variables directly in my play!</p>
 <p>I then show how to use <code>ios_command</code> to run commands and register the output. I use this to diplay snmp settings on my 4 routers.</p>
 <p>The <code>config_routers.yml</code> playbook allows me to change those snmp settings. Note that when I run it 2 times, the second time does nothing: <code>changed=0</code> is displayed and all the nodes are green OK. That's <strong>indempotency</strong>: Ansible doesn't do anything if we're already in the state we want. </p>
 <p>I then log on to the device rtr1 and make a manual change. When I run the playbook again, Ansible corrects that one thing only.</p>
