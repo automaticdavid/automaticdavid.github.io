@@ -20,7 +20,7 @@ The webinar replay (in french) is at:
 
 ![webinar1_demo_1]({static}/images/webinar1_demo_1.gif)
 
-In this first part I showed the inventory used and how we can use inventory groups. In the `gather_ios_data.yml` playbook, note that I'm using `gather_facts: yes` for network devices which is new with Ansible 2.9. This allows me to use the `ansible_net_*` directly in my play!
+In this first part I showed the inventory used and how we can use inventory groups. In the `gather_ios_data.yml` playbook, note that I'm using `gather_facts: yes` for network devices which is new with Ansible 2.9. This allows me to use the `ansible_net_*` variables directly in my play!
 
 I then show how to use `ios_command` to run commands and register the output. I use this to diplay snmp settings on my 4 routers.
 
