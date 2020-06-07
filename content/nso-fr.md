@@ -23,7 +23,7 @@ Ensuite j'exécute le playbook `show_address.yml`: c'est un exemple d'utilisatio
 
 Je me connecte ensuite à un switch et je modifie la configuration en direct. Exécuter de nouveau `check_sync.yml` montre alors que l'équipement en question est "out-of-sync". Il devient facile de gérer cette exception dans un playbook, en ouvrant un tiquet dans un ITSM par exemple ou en déclenchant une action de remédiation. 
 
-Cette action peut être par exemple le playbook que j'exécute ensuite, qui effectue un sync-to NSO: il pousse la configuration NSO vers le switch. J'exécute ensuite le `check_sync.yml` de nouveau pour vérifier que tout est synchrone. 
+Cette action peut être par exemple le playbook `sync_to.yml` que j'exécute ensuite, qui effectue un sync-to NSO: il pousse la configuration NSO vers le switch. J'exécute ensuite le `check_sync.yml` de nouveau pour vérifier que tout est synchrone. 
 
 
 ## 2- Source Of Truth avec NSO 
