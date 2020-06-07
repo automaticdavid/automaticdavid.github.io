@@ -5,6 +5,8 @@
         <title>Interop Ansible & Cisco NSO</title>
         <link rel="stylesheet" href="https://automaticdavid.github.io/theme/css/main.css" />
         <link href="https://automaticdavid.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="It's automatic! Atom Feed" />
+      <link rel="alternate" hreflang="en" href="https://automaticdavid.github.io/nso-06-2020.html">
+
 </head>
 
 <body id="index" class="home">
@@ -30,6 +32,8 @@
         </abbr>
 
 <BR>In <a href="https://automaticdavid.github.io/category/ansible.html">Ansible</a>.<P>
+Translations:
+        <a href="https://automaticdavid.github.io/nso-06-2020.html" hreflang="en">en</a>
       <p>Ansible est très performant pour automatiser les équipements réseau. Mais parfois on a déjà une infra <a href="https://www.cisco.com/c/en/us/solutions/service-provider/solutions-cloud-providers/network-services-orchestrator-solutions.html">Cisco NSO</a> en place. Les modules Ansible pour NSO permettent d'utiliser les deux solutions en cote à cote, de passer de l'une à l'autre de façon simple et finalement de rendre NSO plus interessant.</p>
 <p>Le code utilisé est à:<br>
 <a href="https://github.com/automaticdavid/ansible-nso">https://github.com/automaticdavid/ansible-nso</a></p>
@@ -40,7 +44,7 @@
 <p>Dans cette première partie on commence par executer le playbook <code>check_sync.yml</code> qui permet de vérifier que les switches présents dans l'infra sont synchronisés avec la base NSO. C'est un exemple d'utilisation du module ansible <code>nso_action</code> qui permet de déclencher des actions NSO. On l'execute d'abord pour un switch nommé et ensuite on check le sync pour tous les equipements. </p>
 <p>Ensuite j'exécute le playbook <code>show_address.yml</code>: c'est un exemple d'utilisation du module <code>nso_query</code> qui permet de faire une requête XPATH contre NSO, et que j'utilise pour afficher les IP des mes équipements. </p>
 <p>Je me connecte ensuite à un switch et je modifie la configuration en direct. Exécuter de nouveau <code>check_sync.yml</code> montre alors que l'équipement en question est "out-of-sync". Il devient facile de gérer cette exception dans un playbook, en ouvrant un tiquet dans un ITSM par exemple ou en déclenchant une action de remédiation. </p>
-<p>Cette action peut être par exemple le playbook que j'exécute ensuite, qui effectue un sync-to NSO: il pousse la configuration NSO vers le switch. J'exécute ensuite le <code>check_sync.yml</code> de nouveau pour vérifier que tout est synchrone. </p>
+<p>Cette action peut être par exemple le playbook <code>sync_to.yml</code> que j'exécute ensuite, qui effectue un sync-to NSO: il pousse la configuration NSO vers le switch. J'exécute ensuite le <code>check_sync.yml</code> de nouveau pour vérifier que tout est synchrone. </p>
 <h2>2- Source Of Truth avec NSO</h2>
 <p><img alt="NSO" src="https://automaticdavid.github.io/images/nso2.gif"></p>
 <p>Dans cette deuxième étape on commence par utiliser le module <code>nso_verify</code> pour effectuer un backup de la conf NSO. Ce qu'on obtient c'est une copie local des config des équipements, sous forme de YAML. On peut donc utiliser ces fichier comme "source de vérité" de l'infrastructure, en la stockant dans git par exemple. </p>

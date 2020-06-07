@@ -19,35 +19,37 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="https://automaticdavid.github.io/nso-06-2020-fr.html">Interop Ansible & Cisco NSO</a></h1>
+                    <h1 class="entry-title"><a href="https://automaticdavid.github.io/nso-06-2020.html">Interop Ansible & Cisco NSO</a></h1>
         <abbr class="published" title="2020-06-05T00:00:00+02:00">
                 Published: Fri 05 June 2020
         </abbr>
 
 <BR>In <a href="https://automaticdavid.github.io/category/ansible.html">Ansible</a>.<P>
-<p>Ansible est très performant pour automatiser les équipements réseau. Mais parfois on a déjà une infra <a href="https://www.cisco.com/c/en/us/solutions/service-provider/solutions-cloud-providers/network-services-orchestrator-solutions.html">Cisco NSO</a> en place. Les modules Ansible pour NSO permettent d'utiliser les deux solutions en cote à cote, de passer de l'une à l'autre de façon simple et finalement de rendre NSO plus interessant.</p>
-<p>Le code utilisé est à:<br>
+Translations:
+        <a href="https://automaticdavid.github.io/nso-06-2020-fr.html" hreflang="fr">fr</a>
+<p>Ansible is a powerful solution to manage network infrastructure. But sometimes there's already a <a href="https://www.cisco.com/c/en/us/solutions/service-provider/solutions-cloud-providers/network-services-orchestrator-solutions.html">Cisco NSO</a> setup. The Ansible modules for NSO allow using the two solutions side by side, automating NSO with Ansible. </p>
+<p>The code is available at:<br>
 <a href="https://github.com/automaticdavid/ansible-nso">https://github.com/automaticdavid/ansible-nso</a></p>
-<p>Vous pouvez facilement tester en utilisant le lab NSO proposé par Cisco:<br>
+<p>This can be tested using the Cisco labs:<br>
 <a href="https://devnetsandbox.cisco.com/RM/Topology">https://devnetsandbox.cisco.com/RM/Topology</a></p>
-<h2>1- Piloter le sync NSO</h2>
+<h2>1- Sync NSO</h2>
 <p><img alt="NSO" src="https://automaticdavid.github.io/images/nso1.gif"></p>
-<p>Dans cette première partie on commence par executer le playbook <code>check_sync.yml</code> qui permet de vérifier que les switches présents dans l'infra sont synchronisés avec la base NSO. C'est un exemple d'utilisation du module ansible <code>nso_action</code> qui permet de déclencher des actions NSO. On l'execute d'abord pour un switch nommé et ensuite on check le sync pour tous les equipements. </p>
-<p>Ensuite j'exécute le playbook <code>show_address.yml</code>: c'est un exemple d'utilisation du module <code>nso_query</code> qui permet de faire une requête XPATH contre NSO, et que j'utilise pour afficher les IP des mes équipements. </p>
-<p>Je me connecte ensuite à un switch et je modifie la configuration en direct. Exécuter de nouveau <code>check_sync.yml</code> montre alors que l'équipement en question est "out-of-sync". Il devient facile de gérer cette exception dans un playbook, en ouvrant un tiquet dans un ITSM par exemple ou en déclenchant une action de remédiation. </p>
-<p>Cette action peut être par exemple le playbook que j'exécute ensuite, qui effectue un sync-to NSO: il pousse la configuration NSO vers le switch. J'exécute ensuite le <code>check_sync.yml</code> de nouveau pour vérifier que tout est synchrone. </p>
-<h2>2- Source Of Truth avec NSO</h2>
+<p>In this first part we start by executing the <code>check_sync.yml</code> playbook which verifies if the network devices are in sync with the NSO database. It's an example of using the <code>nso_action</code> Ansible module. We're using it to check the sync status of a given switch, then we check the status for all the devices. </p>
+<p>Then I run the <code>show_address.yml</code> playbook: it's an example of using the  <code>nso_query</code> module to run an XPATH query against NSO. I use it to display the names and IP address of my devices.</p>
+<p>I then telnet into one switch and make a manual confiugration change. When I run  <code>check_sync.yml</code> again, I see that the device is "out-of-sync". With Ansible it becomes easy to deal with such an exception: we could automatically open a ticket in an ITSM system, or trigger a remediation action. </p>
+<p>This remediation could be the next playbook: <code>sync_to.yml</code>, which executes a sync-to NSO action. This updates the switch configuration with what's defined in the NSO configuration, discarding the manual change. When I run <code>check_sync.yml</code> again, everything is in sync. </p>
+<h2>2- Using NSO as a Source Of Truth</h2>
 <p><img alt="NSO" src="https://automaticdavid.github.io/images/nso2.gif"></p>
-<p>Dans cette deuxième étape on commence par utiliser le module <code>nso_verify</code> pour effectuer un backup de la conf NSO. Ce qu'on obtient c'est une copie local des config des équipements, sous forme de YAML. On peut donc utiliser ces fichier comme "source de vérité" de l'infrastructure, en la stockant dans git par exemple. </p>
-<p>Je continue en modifiant une information de configuration pour un des équipements dans son fichier de description. J'exécute ensuite le playbook <code>apply_sot.yml</code>. La première tache lit les infos de la "source of truth" et les applique à la configuration NSO en utilisant le module <code>nso_config</code>. On fait ensuite un <code>nso_verify</code> qui montre qu'il y a bien une violation correspondant à la modification que nous avons effectué, c'est à dire que l'équipement n'est pas synchro avec la config NSO:</p>
+<p>We start with a playbook that uses the <code>nso_verify</code> Ansible module to perform a backup of the NSO config. We get a local directory with YAML files describing the configuration of each device. Since it's YAML we could store this in git and start managing all our configs as code.  </p>
+<p>To show how this would look like, I change the config of a device by modifying its YAML file. I then run the <code>apply_sot.yml</code> playbook. The first task reads the data from our local "source of truth" and applies it to the NSO config using the <code>nso_config</code> module. We then use the <code>nso_verify</code> module and it shows there is indeed a configuration violation between the NSO config and what is actually defined on the switch: </p>
 <p><img alt="NSO" src="https://automaticdavid.github.io/images/nso3.png"></p>
-<p>On effectue donc un sync-to dans la tache "Apply SOT" et un dernier "Check sync" confirme que l'équipement a été synchronisé avec la source de verité. </p>
-<p>On peut aussi vérifier un élément de configuration en particulier, c'est ce que montre le playbook <code>verify_config.yml</code>: on vérifie juste un sous ensemble de la config NSO. Cela peut être interessant par exemple si on veut vérifier un même élément de config mais sur un très grand nombre d'équipements. </p>
-<p>Enfin j'exécute le playbook <code>apply_sot.yml</code> une seconde fois: il ne se passe rien et "changed" est à 0. En effet, le playbook est indempotent et Ansible ne fait rien s'il n'y a rien à faire. Avec <code>--check-mode</code> cela permet de vérifier facilement la conformité de la config NSO. </p>
-<p>Pour finir je me connecte à l'équipement pour vérifier que la modification faite dans la source of truth a bien été appliquée.</p>
-<h2>3- Resource Modules Ansible &amp; NSO</h2>
+<p>The playbook follows with a task called "Apply SOT" that executes a sync-to, in order to push the NSO config to the device. We then run one last "Check sync" to confirm that everything is now in sync. </p>
+<p>It is also possible to verify a specific configuration element, as show in the <code>verify_config.yml</code> playbook. We just check a subset of the NSO config. It can be usefull, for example to check for something across many devices. </p>
+<p>We then run the <code>apply_sot.yml</code> playbook a second time: nothing happens and "changed" is at 0. That's because the playbook is indempotent and Ansible doesn't do anything when there's nothing to do. Combined with the use of <code>--check-mode</code> this can be used to check for the compliance of the NSO config. </p>
+<p>Finaly I telnet into the device to show that the change we made in the source of truth was indeed pushed to the physical device. </p>
+<h2>3- Ansible Resource Modules &amp; NSO</h2>
 <p><img alt="NSO" src="https://automaticdavid.github.io/images/nso4.gif"></p>
-<p>Dans cette dernière partie, on utilise un des modules réseau d'Ansible pour changer la config NXOS directement sur le switch. Le module utilisé est <code>nxos_vlan</code>: </p>
+<p>Here we use one of the many Ansible network modules to change the config of an NXOS device directly, without using NSO. We use the <code>nxos_vlan</code> module: </p>
 <div class="highlight"><pre><span></span><span class="err">- name: Direct device change</span>
 <span class="err">  nxos_vlans:</span>
 <span class="err">    config:</span>
@@ -58,9 +60,8 @@
 </pre></div>
 
 
-<p>On voit que le module remonte les états "before" et "after" pour le changement. </p>
-<p>Manipuler les conf des équipements réseau avec Ansible peut être plus simple qu'avec NSO. </p>
-<p>Après le changement, on effectue une vérification de la synchro NSO: évidemment il y a une violation. Le playbook effectue alors un sync_from pour resynchroniser NSO depuis la configuration de l'équipement. On est donc capable d'utiliser NSO depuis Ansible, mais aussi Ansible et NSO en "cote à cote".</p>                </article>
+<p>Using Ansible's native network modules to automate the network can be easier than through NSO. Here we see that the module shows the "before" and "after" states for the change. </p>
+<p>We then use <code>nso_verify</code> which shows a violations since NSO is now out of sync. Finally we run a sync_from to push the changed we made with Ansible into the NSO config. </p>                </article>
             </aside><!-- /#featured -->
                 <section id="content" class="body">
                     <h1>Other articles</h1>
