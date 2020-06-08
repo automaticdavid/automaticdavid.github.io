@@ -21,7 +21,7 @@ In this first part we start by executing the `check_sync.yml` playbook which ver
 
 Then I run the `show_address.yml` playbook: it's an example of using the  `nso_query` module to run an XPATH query against NSO. I use it to display the names and IP address of my devices.
 
-I then telnet into one switch and make a manual confiugration change. When I run  `check_sync.yml` again, I see that the device is "out-of-sync". With Ansible it becomes easy to deal with such an exception: we could automatically open a ticket in an ITSM system, or trigger a remediation action. 
+I then telnet into one switch (the whole cisco lab is telnet only) and make a manual confiugration change. When I run  `check_sync.yml` again, I see that the device is "out-of-sync". With Ansible it becomes easy to deal with such an exception: we could automatically open a ticket in an ITSM system, or trigger a remediation action. 
 
 This remediation could be the next playbook: `sync_to.yml`, which executes a sync-to NSO action. This updates the switch configuration with what's defined in the NSO configuration, discarding the manual change. When I run `check_sync.yml` again, everything is in sync. 
 
@@ -48,7 +48,7 @@ Finaly I telnet into the device to show that the change we made in the source of
 
 ![NSO]({static}/images/nso4.gif)
    
-Here we use one of the many Ansible network modules to change the config of an NXOS device directly, without using NSO. We use the `nxos_vlan` module: 
+Here we use one of the many Ansible network modules to change the config of an NXOS device directly, without using NSO. To use Ansible, I enabled ssh on one of the lab's equipement and created an Ansible inventory file. We then use the `nxos_vlan` module: 
 
 ```
 - name: Direct device change

@@ -21,7 +21,7 @@ Dans cette première partie on commence par executer le playbook `check_sync.yml
 
 Ensuite j'exécute le playbook `show_address.yml`: c'est un exemple d'utilisation du module `nso_query` qui permet de faire une requête XPATH contre NSO, et que j'utilise pour afficher les IP des mes équipements. 
 
-Je me connecte ensuite à un switch et je modifie la configuration en direct. Exécuter de nouveau `check_sync.yml` montre alors que l'équipement en question est "out-of-sync". Il devient facile de gérer cette exception dans un playbook, en ouvrant un tiquet dans un ITSM par exemple ou en déclenchant une action de remédiation. 
+Je me connecte ensuite à un switch et je modifie la configuration en direct (le lab Cisco est configuré avec seulement telnet). Exécuter de nouveau `check_sync.yml` montre alors que l'équipement en question est "out-of-sync". Il devient facile de gérer cette exception dans un playbook, en ouvrant un tiquet dans un ITSM par exemple ou en déclenchant une action de remédiation. 
 
 Cette action peut être par exemple le playbook `sync_to.yml` que j'exécute ensuite, qui effectue un sync-to NSO: il pousse la configuration NSO vers le switch. J'exécute ensuite le `check_sync.yml` de nouveau pour vérifier que tout est synchrone. 
 
@@ -49,7 +49,7 @@ Pour finir je me connecte à l'équipement pour vérifier que la modification fa
 
 ![NSO]({static}/images/nso4.gif)
    
-Dans cette dernière partie, on utilise un des modules réseau d'Ansible pour changer la config NXOS directement sur le switch. Le module utilisé est `nxos_vlan`: 
+Dans cette dernière partie, on utilise un des modules réseau d'Ansible pour changer la config NXOS directement sur le switch. Pour utiliser Ansible, j'ai activé ssh sur un des équipement et créé un fichier inventory. Le module utilisé est `nxos_vlan`: 
 
 ```
 - name: Direct device change
