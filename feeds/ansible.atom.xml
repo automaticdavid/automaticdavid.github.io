@@ -11,7 +11,7 @@
 &lt;p&gt;&lt;img alt="NSO" src="https://automaticdavid.github.io/images/nso1.gif"&gt;&lt;/p&gt;
 &lt;p&gt;In this first part we start by executing the &lt;code&gt;check_sync.yml&lt;/code&gt; playbook which verifies if the network devices are in sync with the NSO database. It's an example of using the &lt;code&gt;nso_action&lt;/code&gt; Ansible module. We're using it to check the sync status of a given switch, then we check the status for all the devices. &lt;/p&gt;
 &lt;p&gt;Then I run the &lt;code&gt;show_address.yml&lt;/code&gt; playbook: it's an example of using the  &lt;code&gt;nso_query&lt;/code&gt; module to run an XPATH query against NSO. I use it to display the names and IP address of my devices.&lt;/p&gt;
-&lt;p&gt;I then telnet into one switch and make a manual confiugration change. When I run  &lt;code&gt;check_sync.yml&lt;/code&gt; again, I see that the device is "out-of-sync". With Ansible it becomes easy to deal with such an exception: we could automatically open a ticket in an ITSM system, or trigger a remediation action. &lt;/p&gt;
+&lt;p&gt;I then telnet into one switch (the whole cisco lab is telnet only) and make a manual confiugration change. When I run  &lt;code&gt;check_sync.yml&lt;/code&gt; again, I see that the device is "out-of-sync". With Ansible it becomes easy to deal with such an exception: we could automatically open a ticket in an ITSM system, or trigger a remediation action. &lt;/p&gt;
 &lt;p&gt;This remediation could be the next playbook: &lt;code&gt;sync_to.yml&lt;/code&gt;, which executes a sync-to NSO action. This updates the switch configuration with what's defined in the NSO configuration, discarding the manual change. When I run &lt;code&gt;check_sync.yml&lt;/code&gt; again, everything is in sync. &lt;/p&gt;
 &lt;h2&gt;2- Using NSO as a Source Of Truth&lt;/h2&gt;
 &lt;p&gt;&lt;img alt="NSO" src="https://automaticdavid.github.io/images/nso2.gif"&gt;&lt;/p&gt;
@@ -24,7 +24,7 @@
 &lt;p&gt;Finaly I telnet into the device to show that the change we made in the source of truth was indeed pushed to the physical device. &lt;/p&gt;
 &lt;h2&gt;3- Ansible Resource Modules &amp;amp; NSO&lt;/h2&gt;
 &lt;p&gt;&lt;img alt="NSO" src="https://automaticdavid.github.io/images/nso4.gif"&gt;&lt;/p&gt;
-&lt;p&gt;Here we use one of the many Ansible network modules to change the config of an NXOS device directly, without using NSO. We use the &lt;code&gt;nxos_vlan&lt;/code&gt; module: &lt;/p&gt;
+&lt;p&gt;Here we use one of the many Ansible network modules to change the config of an NXOS device directly, without using NSO. To use Ansible, I enabled ssh on one of the lab's equipement and created an Ansible inventory file. We then use the &lt;code&gt;nxos_vlan&lt;/code&gt; module: &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;- name: Direct device change&lt;/span&gt;
 &lt;span class="err"&gt;  nxos_vlans:&lt;/span&gt;
 &lt;span class="err"&gt;    config:&lt;/span&gt;

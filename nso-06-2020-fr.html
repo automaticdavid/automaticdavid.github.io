@@ -43,7 +43,7 @@ Translations:
 <p><img alt="NSO" src="https://automaticdavid.github.io/images/nso1.gif"></p>
 <p>Dans cette première partie on commence par executer le playbook <code>check_sync.yml</code> qui permet de vérifier que les switches présents dans l'infra sont synchronisés avec la base NSO. C'est un exemple d'utilisation du module ansible <code>nso_action</code> qui permet de déclencher des actions NSO. On l'execute d'abord pour un switch nommé et ensuite on check le sync pour tous les equipements. </p>
 <p>Ensuite j'exécute le playbook <code>show_address.yml</code>: c'est un exemple d'utilisation du module <code>nso_query</code> qui permet de faire une requête XPATH contre NSO, et que j'utilise pour afficher les IP des mes équipements. </p>
-<p>Je me connecte ensuite à un switch et je modifie la configuration en direct. Exécuter de nouveau <code>check_sync.yml</code> montre alors que l'équipement en question est "out-of-sync". Il devient facile de gérer cette exception dans un playbook, en ouvrant un tiquet dans un ITSM par exemple ou en déclenchant une action de remédiation. </p>
+<p>Je me connecte ensuite à un switch et je modifie la configuration en direct (le lab Cisco est configuré avec seulement telnet). Exécuter de nouveau <code>check_sync.yml</code> montre alors que l'équipement en question est "out-of-sync". Il devient facile de gérer cette exception dans un playbook, en ouvrant un tiquet dans un ITSM par exemple ou en déclenchant une action de remédiation. </p>
 <p>Cette action peut être par exemple le playbook <code>sync_to.yml</code> que j'exécute ensuite, qui effectue un sync-to NSO: il pousse la configuration NSO vers le switch. J'exécute ensuite le <code>check_sync.yml</code> de nouveau pour vérifier que tout est synchrone. </p>
 <h2>2- Source Of Truth avec NSO</h2>
 <p><img alt="NSO" src="https://automaticdavid.github.io/images/nso2.gif"></p>
@@ -56,7 +56,7 @@ Translations:
 <p>Pour finir je me connecte à l'équipement pour vérifier que la modification faite dans la source of truth a bien été appliquée.</p>
 <h2>3- Resource Modules Ansible &amp; NSO</h2>
 <p><img alt="NSO" src="https://automaticdavid.github.io/images/nso4.gif"></p>
-<p>Dans cette dernière partie, on utilise un des modules réseau d'Ansible pour changer la config NXOS directement sur le switch. Le module utilisé est <code>nxos_vlan</code>: </p>
+<p>Dans cette dernière partie, on utilise un des modules réseau d'Ansible pour changer la config NXOS directement sur le switch. Pour utiliser Ansible, j'ai activé ssh sur un des équipement et créé un fichier inventory. Le module utilisé est <code>nxos_vlan</code>: </p>
 <div class="highlight"><pre><span></span><span class="err">- name: Direct device change</span>
 <span class="err">  nxos_vlans:</span>
 <span class="err">    config:</span>
