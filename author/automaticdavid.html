@@ -19,7 +19,106 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="https://automaticdavid.github.io/nso-06-2020.html">Interop Ansible & Cisco NSO</a></h1>
+                    <h1 class="entry-title"><a href="https://automaticdavid.github.io/iac-vmware.html">Infra As Code with Ansible for VMware vSphere</a></h1>
+        <abbr class="published" title="2020-07-14T00:00:00+02:00">
+                Published: Tue 14 July 2020
+        </abbr>
+
+<BR>In <a href="https://automaticdavid.github.io/category/tower.html">Tower</a>.<P>
+<p>This is a short write up about a demo I did for a Red Hat France Webinar.
+You can find the full replay (in french) at: <br>
+<a href="https://www.redhat.com/fr/events/webinar/automate-enterprise-infrastructure">Automatiser à l’échelle de l’entreprise et gérer l'infrastructure comme du code avec Red Hat Ansible Automation Platform</a></p>
+<p>The code used is at: <br>
+<a href="https://github.com/automaticdavid/demo_vmware/tree/webinar_072020">github</a></p>
+<p>The inventory I'm using is at:<br>
+<a href="https://github.com/automaticdavid/vmware_services/tree/master/paris">github</a></p>
+<h2>1 Setting up the Inventories in Tower</h2>
+<p>We're using a Tower inventory with 2 sources: one is the project that points to the git inventory "vmware service definition", the other is a vCenter based dynamic inventory:</p>
+<p><img alt="Inventory" src="https://automaticdavid.github.io/images/webinar2_inventory.png"></p>
+<p>Tower ships with a default vCenter inventory, but for this demo I'm using the latest upstream version. To do this I copied the upstream collection into my own repo at: <a href="https://github.com/automaticdavid/vmware_inventory.git">https://github.com/automaticdavid/vmware_inventory.git</a>.<br>
+Note that I respected the collection directory path: <code>collections/ansible_collections/community/vmware/</code>  </p>
+<p>I also added an <code>ansible.cfg</code> file that enables the vmware community inventory plugin and a configuration file for the plugin: <code>conf.vmware.yml</code> (this file has to end in .vmware.yml). I'm using this to force the dynamic inventory to report hostnames as the name of the VM, instead of the default which is a concatenation of the VM name and the VM UUID. </p>
+<p>To use vCenter tags, we need pyvmomi (obviously) and also the python VMware Automation SDK, as documented in: (https://docs.ansible.com/ansible/latest/plugins/inventory/vmware_vm_inventory.html). <br>
+To run this cleanly, I created a dedicated venv as explained in: (https://docs.ansible.com/ansible-tower/latest/html/upgrade-migration-guide/virtualenv.html)</p>
+<p>Inside Tower I also defined a custom credential to use with this inventory: </p>
+<p><img alt="Credential" src="https://automaticdavid.github.io/images/webinar2_cred.png"></p>
+<p>This provides the environment variables needed to connect to the vCenter. Depending on the version of the collection you're using, you may also use a Tower vCenter credential for this. 
+The inventory source definition in Tower is a standard "sourced from a project" definition, with an added variable to enable using the custom plugin: </p>
+<p><img alt="Credential" src="https://automaticdavid.github.io/images/webinar2_inventory2.png"></p>
+<p>This also allows to specify that we're using our custom venv.</p>
+<h2>2 Provisioning a Service</h2>
+<p>We start with an empty vCenter and a service definition in git. The definition takes place in services.ini where we add the service <code>app1</code> to the inventory:</p>
+<div class="highlight"><pre><span></span><span class="k">[services:children]</span>
+<span class="na">app1</span>
+
+<span class="k">[app1]</span>
+<span class="na">host1</span>
+</pre></div>
+
+
+<p>We also create in the <code>group_vars</code> directory a file called <code>app1.yml</code> that defines the <code>app1</code> service:</p>
+<div class="highlight"><pre><span></span><span class="n">service_config</span><span class="o">:</span>
+  <span class="n">vm</span><span class="o">:</span> 
+    <span class="n">project</span><span class="o">:</span> <span class="n">terminator</span>
+    <span class="n">role</span><span class="o">:</span> <span class="n">webserver</span>
+    <span class="n">service</span><span class="o">:</span> <span class="n">app1</span>
+    <span class="n">count</span><span class="o">:</span> <span class="mi">1</span>
+    <span class="n">size</span><span class="o">:</span> <span class="n">small</span>
+  <span class="n">app</span><span class="o">:</span> 
+    <span class="n">name</span><span class="o">:</span> <span class="n">terminator_v1</span>
+    <span class="n">quote</span><span class="o">:</span> <span class="n">give</span> <span class="n">me</span> <span class="n">your</span> <span class="n">boots</span><span class="o">,</span> <span class="n">your</span> <span class="n">gun</span><span class="o">,</span> <span class="n">and</span> <span class="n">your</span> <span class="n">motorcycle</span>
+    <span class="n">version</span><span class="o">:</span> <span class="mi">1</span> 
+  <span class="n">global</span><span class="o">:</span> 
+    <span class="n">context</span><span class="o">:</span> <span class="n">movie_machine</span>
+</pre></div>
+
+
+<p>I like how this provides a very clean and readable definition for a service. Although this is a simple example it could very well be extended to manage more complex use cases. </p>
+<p>We then run a Tower Workflow that does 4 things: </p>
+<ul>
+<li>Refresh the project based inventory source to read the new service definitions from git</li>
+<li>Provision and tag the VMs needed for the new services</li>
+<li>Refresh the vCenter dynamic inventory once the VM are provisioned, getting the tags as Tower inventory groups</li>
+<li>Run a playbook that install the application layer needed on each VM of the services, based on the VM's groups.</li>
+</ul>
+<p>Here's a video of what it looks like (better in full screen): </p>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/V0hhakK6Uwc" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<p>On my lab setup, the workflow takes less than 4mn to complete.</p>
+<h2>3 Adding and Modifying a Service</h2>
+<p>The playbook we call in the Job Template is indempotent: when I add a whole new service, running the same workflow just adds what's needed without doing anything to our already provisioned service. </p>
+<p>In the video below, I add a new service <code>app2</code> but also modify the <code>version</code> value of the <code>app1</code> service. In the Tower log we can see that Ansible does only what's needed and leaves what is already configured untouched. </p>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/XfyPkvEOqSE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<p>We can also use git to track changes to the services definitions: </p>
+<p><img alt="Git diff" src="https://automaticdavid.github.io/images/webinar2_git.png"></p>
+<h2>4 Force delete of a VM</h2>
+<p>What's cool with Ansible is that the IaC behaviour is based on indempotency of playbooks and definition of state in a source of truth (the inventory in git), as opposed to other tools that need their own statefull reference. This means that I can delete a VM in vCenter and when the Job Template is executed again, it just corrects what's missing (in this lab the IP of the recreated VM changes, but in real life we'd use an IPAM). We are not locked to only one control plane.   </p>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/K0xLGhgTuhA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<p>We can also run the Job Template in <code>check_mode</code> and do compliance checking. </p>
+<h2>What's next</h2>
+<p>There's a number of other things we could do from here:  </p>
+<ul>
+<li>Enable <a href="https://docs.ansible.com/ansible-tower/latest/html/userguide/webhooks.html">webhooks</a></li>
+<li>Enable different environements to test and promote our infrastructure and services definitions</li>
+<li>Add support for changing the VM's hardware definition of a provisioned service</li>
+<li>Use pull requests to manage the services definitions </li>
+<li>Add other roles for services, for instance eap </li>
+</ul>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="https://automaticdavid.github.io/nso-06-2020.html" rel="bookmark"
+                           title="Permalink to Interop Ansible & Cisco NSO">Interop Ansible & Cisco NSO</a></h1>
+                </header>
+
+                <div class="entry-content">
         <abbr class="published" title="2020-06-05T00:00:00+02:00">
                 Published: Fri 05 June 2020
         </abbr>
@@ -27,46 +126,13 @@
 <BR>In <a href="https://automaticdavid.github.io/category/ansible.html">Ansible</a>.<P>
 Translations:
         <a href="https://automaticdavid.github.io/nso-06-2020-fr.html" hreflang="fr">fr</a>
-<p>Ansible is a powerful solution to manage network infrastructure. But sometimes there's already a <a href="https://www.cisco.com/c/en/us/solutions/service-provider/solutions-cloud-providers/network-services-orchestrator-solutions.html">Cisco NSO</a> setup. The Ansible modules for NSO allow using the two solutions side by side, automating NSO with Ansible. </p>
+                <p>Ansible is a powerful solution to manage network infrastructure. But sometimes there's already a <a href="https://www.cisco.com/c/en/us/solutions/service-provider/solutions-cloud-providers/network-services-orchestrator-solutions.html">Cisco NSO</a> setup. The Ansible modules for NSO allow using the two solutions side by side, automating NSO with Ansible. </p>
 <p>The code is available at:<br>
 <a href="https://github.com/automaticdavid/ansible-nso">https://github.com/automaticdavid/ansible-nso</a></p>
-<p>This can be tested using the Cisco labs:<br>
-<a href="https://devnetsandbox.cisco.com/RM/Topology">https://devnetsandbox.cisco.com/RM/Topology</a></p>
-<h2>1- Sync NSO</h2>
-<p><img alt="NSO" src="https://automaticdavid.github.io/images/nso1.gif"></p>
-<p>In this first part we start by executing the <code>check_sync.yml</code> playbook which verifies if the network devices are in sync with the NSO database. It's an example of using the <code>nso_action</code> Ansible module. We're using it to check the sync status of a given switch, then we check the status for all the devices. </p>
-<p>Then I run the <code>show_address.yml</code> playbook: it's an example of using the  <code>nso_query</code> module to run an XPATH query against NSO. I use it to display the names and IP address of my devices.</p>
-<p>I then telnet into one switch (the whole cisco lab is telnet only) and make a manual confiugration change. When I run  <code>check_sync.yml</code> again, I see that the device is "out-of-sync". With Ansible it becomes easy to deal with such an exception: we could automatically open a ticket in an ITSM system, or trigger a remediation action. </p>
-<p>This remediation could be the next playbook: <code>sync_to.yml</code>, which executes a sync-to NSO action. This updates the switch configuration with what's defined in the NSO configuration, discarding the manual change. When I run <code>check_sync.yml</code> again, everything is in sync. </p>
-<h2>2- Using NSO as a Source Of Truth</h2>
-<p><img alt="NSO" src="https://automaticdavid.github.io/images/nso2.gif"></p>
-<p>We start with a playbook that uses the <code>nso_verify</code> Ansible module to perform a backup of the NSO config. We get a local directory with YAML files describing the configuration of each device. Since it's YAML we could store this in git and start managing all our configs as code.  </p>
-<p>To show how this would look like, I change the config of a device by modifying its YAML file. I then run the <code>apply_sot.yml</code> playbook. The first task reads the data from our local "source of truth" and applies it to the NSO config using the <code>nso_config</code> module. We then use the <code>nso_verify</code> module and it shows there is indeed a configuration violation between the NSO config and what is actually defined on the switch: </p>
-<p><img alt="NSO" src="https://automaticdavid.github.io/images/nso3.png"></p>
-<p>The playbook follows with a task called "Apply SOT" that executes a sync-to, in order to push the NSO config to the device. We then run one last "Check sync" to confirm that everything is now in sync. </p>
-<p>It is also possible to verify a specific configuration element, as show in the <code>verify_config.yml</code> playbook. We just check a subset of the NSO config. It can be usefull, for example to check for something across many devices. </p>
-<p>We then run the <code>apply_sot.yml</code> playbook a second time: nothing happens and "changed" is at 0. That's because the playbook is indempotent and Ansible doesn't do anything when there's nothing to do. Combined with the use of <code>--check-mode</code> this can be used to check for the compliance of the NSO config. </p>
-<p>Finaly I telnet into the device to show that the change we made in the source of truth was indeed pushed to the physical device. </p>
-<h2>3- Ansible Resource Modules &amp; NSO</h2>
-<p><img alt="NSO" src="https://automaticdavid.github.io/images/nso4.gif"></p>
-<p>Here we use one of the many Ansible network modules to change the config of an NXOS device directly, without using NSO. To use Ansible, I enabled ssh on one of the lab's equipement and created an Ansible inventory file. We then use the <code>nxos_vlan</code> module: </p>
-<div class="highlight"><pre><span></span><span class="err">- name: Direct device change</span>
-<span class="err">  nxos_vlans:</span>
-<span class="err">    config:</span>
-<span class="err">      - vlan_id: 501</span>
-<span class="err">        name: ansible</span>
-<span class="err">    state:  merged</span>
-<span class="err">  register: r_vlan</span>
-</pre></div>
-
-
-<p>Using Ansible's native network modules to automate the network can be easier than through NSO. Here we see that the module shows the "before" and "after" states for the change. </p>
-<p>We then use <code>nso_verify</code> which shows a violations since NSO is now out of sync. Finally we run a sync_from to push the changed we made with Ansible into the NSO config. </p>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+<p>This can be tested using the …</p>
+                <a class="readmore" href="https://automaticdavid.github.io/nso-06-2020.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>

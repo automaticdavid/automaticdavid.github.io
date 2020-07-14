@@ -19,67 +19,117 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="https://automaticdavid.github.io/using-conditional-import-of-external-vars-with-towers-smart-inventories.html">Using conditional import of external vars with Tower's Smart Inventories</a></h1>
-        <abbr class="published" title="2019-10-20T00:00:00+02:00">
-                Published: Sun 20 October 2019
+                    <h1 class="entry-title"><a href="https://automaticdavid.github.io/iac-vmware.html">Infra As Code with Ansible for VMware vSphere</a></h1>
+        <abbr class="published" title="2020-07-14T00:00:00+02:00">
+                Published: Tue 14 July 2020
         </abbr>
 
 <BR>In <a href="https://automaticdavid.github.io/category/tower.html">Tower</a>.<P>
-<p>The problem we are trying to solve is that smart inventories in Tower do not include groups, and therefore we can't use group_vars defined at the inventories level. Since host_vars are imported we will use a host_var to trigger import of the wanted vars.</p>
-<h2>1- VM Properties</h2>
-<p>We're going to use the "Custom Attributes" feature of vSphere to inherit a host_vars. Each VM has a custom attribute <code>dcl-custom-attr</code> but with a diferent value for each of our test VMs:</p>
-<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/custom-prop.png"></p>
-<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/custom-prop-2.png"></p>
-<h2>2- Dynamic Inventory &amp; Smart Inventory in Tower</h2>
-<p>We're using the VMware dynamic inventory with source variables: </p>
-<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/inv.png"></p>
-<p>We want to test importing vars for hosts sourced from a smart inventory so we define a smart inventory:</p>
-<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/smart.png"></p>
-<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/smart-hosts.png"></p>
-<p>The VMs in the smart inventory show the custom attributes as host_vars:</p>
-<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/vars.png"></p>
-<h2>3- Conditional include of vars</h2>
-<p>Now we can use the following playbook:</p>
-<div class="highlight"><pre><span></span><span class="x">---</span>
-<span class="x">- name: Conditional vars inclusion based on host_vars </span>
-<span class="x">  hosts: all</span>
-<span class="x">  gather_facts: no</span>
+<p>This is a short write up about a demo I did for a Red Hat France Webinar.
+You can find the full replay (in french) at: <br>
+<a href="https://www.redhat.com/fr/events/webinar/automate-enterprise-infrastructure">Automatiser à l’échelle de l’entreprise et gérer l'infrastructure comme du code avec Red Hat Ansible Automation Platform</a></p>
+<p>The code used is at: <br>
+<a href="https://github.com/automaticdavid/demo_vmware/tree/webinar_072020">github</a></p>
+<p>The inventory I'm using is at:<br>
+<a href="https://github.com/automaticdavid/vmware_services/tree/master/paris">github</a></p>
+<h2>1 Setting up the Inventories in Tower</h2>
+<p>We're using a Tower inventory with 2 sources: one is the project that points to the git inventory "vmware service definition", the other is a vCenter based dynamic inventory:</p>
+<p><img alt="Inventory" src="https://automaticdavid.github.io/images/webinar2_inventory.png"></p>
+<p>Tower ships with a default vCenter inventory, but for this demo I'm using the latest upstream version. To do this I copied the upstream collection into my own repo at: <a href="https://github.com/automaticdavid/vmware_inventory.git">https://github.com/automaticdavid/vmware_inventory.git</a>.<br>
+Note that I respected the collection directory path: <code>collections/ansible_collections/community/vmware/</code>  </p>
+<p>I also added an <code>ansible.cfg</code> file that enables the vmware community inventory plugin and a configuration file for the plugin: <code>conf.vmware.yml</code> (this file has to end in .vmware.yml). I'm using this to force the dynamic inventory to report hostnames as the name of the VM, instead of the default which is a concatenation of the VM name and the VM UUID. </p>
+<p>To use vCenter tags, we need pyvmomi (obviously) and also the python VMware Automation SDK, as documented in: (https://docs.ansible.com/ansible/latest/plugins/inventory/vmware_vm_inventory.html). <br>
+To run this cleanly, I created a dedicated venv as explained in: (https://docs.ansible.com/ansible-tower/latest/html/upgrade-migration-guide/virtualenv.html)</p>
+<p>Inside Tower I also defined a custom credential to use with this inventory: </p>
+<p><img alt="Credential" src="https://automaticdavid.github.io/images/webinar2_cred.png"></p>
+<p>This provides the environment variables needed to connect to the vCenter. Depending on the version of the collection you're using, you may also use a Tower vCenter credential for this. 
+The inventory source definition in Tower is a standard "sourced from a project" definition, with an added variable to enable using the custom plugin: </p>
+<p><img alt="Credential" src="https://automaticdavid.github.io/images/webinar2_inventory2.png"></p>
+<p>This also allows to specify that we're using our custom venv.</p>
+<h2>2 Provisioning a Service</h2>
+<p>We start with an empty vCenter and a service definition in git. The definition takes place in services.ini where we add the service <code>app1</code> to the inventory:</p>
+<div class="highlight"><pre><span></span><span class="k">[services:children]</span>
+<span class="na">app1</span>
 
-<span class="x">  tasks:</span>
-
-<span class="x">    - name: Extract Custom Prop Value</span>
-<span class="x">      set_fact:</span>
-<span class="x">        vm_props: &quot;</span><span class="cp">{{</span> <span class="nv">value</span> <span class="o">|</span> <span class="nf">map</span><span class="o">(</span><span class="nv">attribute</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="o">)|</span> <span class="nf">list</span> <span class="cp">}}</span><span class="x">&quot;</span>
-
-<span class="x">    - name: Include for first group</span>
-<span class="x">      include_vars:</span>
-<span class="x">        file: first.yml</span>
-<span class="x">      when: &#39;&quot;dcl-1&quot; in vm_props&#39;</span>
-
-<span class="x">    - name: Include for second group</span>
-<span class="x">      include_vars:</span>
-<span class="x">        file: second.yml</span>
-<span class="x">      when: &#39;&quot;dcl-2&quot; in vm_props&#39;</span>
-
-<span class="x">    - name: Display imported value</span>
-<span class="x">      debug: </span>
-<span class="x">        msg: &quot;</span><span class="cp">{{</span> <span class="nv">my_imported_value</span> <span class="cp">}}</span><span class="x">&quot;</span>
+<span class="k">[app1]</span>
+<span class="na">host1</span>
 </pre></div>
 
 
-<p>Depending on the value of the host_var we include a file or another, that defines the variable <code>my_imported_value</code> but with different values. <BR>
-See: https://github.com/automaticdavid/set_vars</p>
-<p>We define the associated Tower template:</p>
-<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/template.png"></p>
-<p>Execution yields the inclusion of the var with the correct value for each VM: </p>
-<p><img alt="VM Custom prop" src="https://automaticdavid.github.io/images/result.png"></p>
-<p>We can use the same mechanism to include different vars for each VM.</p>
-<p>This could be used in a role that would get included at the begining of each playbook, or with a Tower Workflow. </p>                </article>
+<p>We also create in the <code>group_vars</code> directory a file called <code>app1.yml</code> that defines the <code>app1</code> service:</p>
+<div class="highlight"><pre><span></span><span class="n">service_config</span><span class="o">:</span>
+  <span class="n">vm</span><span class="o">:</span> 
+    <span class="n">project</span><span class="o">:</span> <span class="n">terminator</span>
+    <span class="n">role</span><span class="o">:</span> <span class="n">webserver</span>
+    <span class="n">service</span><span class="o">:</span> <span class="n">app1</span>
+    <span class="n">count</span><span class="o">:</span> <span class="mi">1</span>
+    <span class="n">size</span><span class="o">:</span> <span class="n">small</span>
+  <span class="n">app</span><span class="o">:</span> 
+    <span class="n">name</span><span class="o">:</span> <span class="n">terminator_v1</span>
+    <span class="n">quote</span><span class="o">:</span> <span class="n">give</span> <span class="n">me</span> <span class="n">your</span> <span class="n">boots</span><span class="o">,</span> <span class="n">your</span> <span class="n">gun</span><span class="o">,</span> <span class="n">and</span> <span class="n">your</span> <span class="n">motorcycle</span>
+    <span class="n">version</span><span class="o">:</span> <span class="mi">1</span> 
+  <span class="n">global</span><span class="o">:</span> 
+    <span class="n">context</span><span class="o">:</span> <span class="n">movie_machine</span>
+</pre></div>
+
+
+<p>I like how this provides a very clean and readable definition for a service. Although this is a simple example it could very well be extended to manage more complex use cases. </p>
+<p>We then run a Tower Workflow that does 4 things: </p>
+<ul>
+<li>Refresh the project based inventory source to read the new service definitions from git</li>
+<li>Provision and tag the VMs needed for the new services</li>
+<li>Refresh the vCenter dynamic inventory once the VM are provisioned, getting the tags as Tower inventory groups</li>
+<li>Run a playbook that install the application layer needed on each VM of the services, based on the VM's groups.</li>
+</ul>
+<p>Here's a video of what it looks like (better in full screen): </p>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/V0hhakK6Uwc" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<p>On my lab setup, the workflow takes less than 4mn to complete.</p>
+<h2>3 Adding and Modifying a Service</h2>
+<p>The playbook we call in the Job Template is indempotent: when I add a whole new service, running the same workflow just adds what's needed without doing anything to our already provisioned service. </p>
+<p>In the video below, I add a new service <code>app2</code> but also modify the <code>version</code> value of the <code>app1</code> service. In the Tower log we can see that Ansible does only what's needed and leaves what is already configured untouched. </p>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/XfyPkvEOqSE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<p>We can also use git to track changes to the services definitions: </p>
+<p><img alt="Git diff" src="https://automaticdavid.github.io/images/webinar2_git.png"></p>
+<h2>4 Force delete of a VM</h2>
+<p>What's cool with Ansible is that the IaC behaviour is based on indempotency of playbooks and definition of state in a source of truth (the inventory in git), as opposed to other tools that need their own statefull reference. This means that I can delete a VM in vCenter and when the Job Template is executed again, it just corrects what's missing (in this lab the IP of the recreated VM changes, but in real life we'd use an IPAM). We are not locked to only one control plane.   </p>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/K0xLGhgTuhA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<p>We can also run the Job Template in <code>check_mode</code> and do compliance checking. </p>
+<h2>What's next</h2>
+<p>There's a number of other things we could do from here:  </p>
+<ul>
+<li>Enable <a href="https://docs.ansible.com/ansible-tower/latest/html/userguide/webhooks.html">webhooks</a></li>
+<li>Enable different environements to test and promote our infrastructure and services definitions</li>
+<li>Add support for changing the VM's hardware definition of a provisioned service</li>
+<li>Use pull requests to manage the services definitions </li>
+<li>Add other roles for services, for instance eap </li>
+</ul>                </article>
             </aside><!-- /#featured -->
                 <section id="content" class="body">
                     <h1>Other articles</h1>
                     <hr />
                     <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="https://automaticdavid.github.io/using-conditional-import-of-external-vars-with-towers-smart-inventories.html" rel="bookmark"
+                           title="Permalink to Using conditional import of external vars with Tower's Smart Inventories">Using conditional import of external vars with Tower's Smart Inventories</a></h1>
+                </header>
+
+                <div class="entry-content">
+        <abbr class="published" title="2019-10-20T00:00:00+02:00">
+                Published: Sun 20 October 2019
+        </abbr>
+
+<BR>In <a href="https://automaticdavid.github.io/category/tower.html">Tower</a>.<P>
+                <p>The problem we are trying to solve is that smart inventories in Tower do not include groups, and therefore we can't use group_vars defined at the inventories level. Since host_vars are imported we will use a host_var to trigger import of the wanted vars.</p>
+<h2>1- VM Properties</h2>
+<p>We're going to …</p>
+                <a class="readmore" href="https://automaticdavid.github.io/using-conditional-import-of-external-vars-with-towers-smart-inventories.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>
