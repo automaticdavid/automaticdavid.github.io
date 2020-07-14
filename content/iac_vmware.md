@@ -1,6 +1,6 @@
 Title: Infra As Code with Ansible for VMware vSphere
 Category: Tower
-Date: 2020-06-07
+Date: 2020-07-14
 Lang: en
 Slug: iac-vmware
 
