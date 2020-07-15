@@ -14,7 +14,7 @@ The code used is at:
 The inventory I'm using is at:  
 [github](https://github.com/automaticdavid/vmware_services/tree/master/paris)
 
-## 1 Setting up the Inventories in Tower
+# 1 Setting up the Inventories in Tower
 
 We're using a Tower inventory with 2 sources: one is the project that points to the git inventory "vmware service definition", the other is a vCenter based dynamic inventory:
 
@@ -39,7 +39,7 @@ The inventory source definition in Tower is a standard "sourced from a project" 
 
 This also allows to specify that we're using our custom venv.
 
-## 2 Provisioning a Service
+# 2 Provisioning a Service
 
 We start with an empty vCenter and a service definition in git. The definition takes place in services.ini where we add the service `app1` to the inventory:
 
@@ -78,36 +78,36 @@ We then run a Tower Workflow that does 4 things:
 - Refresh the vCenter dynamic inventory once the VM are provisioned, getting the tags as Tower inventory groups
 - Run a playbook that install the application layer needed on each VM of the services, based on the VM's groups.
 
-Here's a video of what it looks like (better in full screen): 
+Here's a video of what it looks like: 
 
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/V0hhakK6Uwc" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/hd-QKMHDcCA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 On my lab setup, the workflow takes less than 4mn to complete.
     
 
-## 3 Adding and Modifying a Service
+# 3 Adding and Modifying a Service
 
 The playbook we call in the Job Template is indempotent: when I add a whole new service, running the same workflow just adds what's needed without doing anything to our already provisioned service. 
 
 In the video below, I add a new service `app2` but also modify the `version` value of the `app1` service. In the Tower log we can see that Ansible does only what's needed and leaves what is already configured untouched. 
 
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/XfyPkvEOqSE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/LAYCBPX5pOQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     
 We can also use git to track changes to the services definitions: 
 
 ![Git diff]({static}/images/webinar2_git.png)
     
 
-## 4 Force delete of a VM
+# 4 Force delete of a VM
 
 What's cool with Ansible is that the IaC behaviour is based on indempotency of playbooks and definition of state in a source of truth (the inventory in git), as opposed to other tools that need their own statefull reference. This means that I can delete a VM in vCenter and when the Job Template is executed again, it just corrects what's missing (in this lab the IP of the recreated VM changes, but in real life we'd use an IPAM). We are not locked to only one control plane.   
 
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/K0xLGhgTuhA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/2G7_4Zmd0co" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 We can also run the Job Template in `check_mode` and do compliance checking. 
 
 
-## What's next
+# What's next
 
 There's a number of other things we could do from here:  
 
