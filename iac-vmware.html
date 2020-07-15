@@ -37,7 +37,7 @@ You can find the full replay (in french) at: <br>
 <a href="https://github.com/automaticdavid/demo_vmware/tree/webinar_072020">github</a></p>
 <p>The inventory I'm using is at:<br>
 <a href="https://github.com/automaticdavid/vmware_services/tree/master/paris">github</a></p>
-<h2>1 Setting up the Inventories in Tower</h2>
+<h1>1 Setting up the Inventories in Tower</h1>
 <p>We're using a Tower inventory with 2 sources: one is the project that points to the git inventory "vmware service definition", the other is a vCenter based dynamic inventory:</p>
 <p><img alt="Inventory" src="https://automaticdavid.github.io/images/webinar2_inventory.png"></p>
 <p>Tower ships with a default vCenter inventory, but for this demo I'm using the latest upstream version. To do this I copied the upstream collection into my own repo at: <a href="https://github.com/automaticdavid/vmware_inventory.git">https://github.com/automaticdavid/vmware_inventory.git</a>.<br>
@@ -51,7 +51,7 @@ To run this cleanly, I created a dedicated venv as explained in: (https://docs.a
 The inventory source definition in Tower is a standard "sourced from a project" definition, with an added variable to enable using the custom plugin: </p>
 <p><img alt="Credential" src="https://automaticdavid.github.io/images/webinar2_inventory2.png"></p>
 <p>This also allows to specify that we're using our custom venv.</p>
-<h2>2 Provisioning a Service</h2>
+<h1>2 Provisioning a Service</h1>
 <p>We start with an empty vCenter and a service definition in git. The definition takes place in services.ini where we add the service <code>app1</code> to the inventory:</p>
 <div class="highlight"><pre><span></span><span class="k">[services:children]</span>
 <span class="na">app1</span>
@@ -86,23 +86,23 @@ The inventory source definition in Tower is a standard "sourced from a project" 
 <li>Refresh the vCenter dynamic inventory once the VM are provisioned, getting the tags as Tower inventory groups</li>
 <li>Run a playbook that install the application layer needed on each VM of the services, based on the VM's groups.</li>
 </ul>
-<p>Here's a video of what it looks like (better in full screen): </p>
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/V0hhakK6Uwc" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<p>Here's a video of what it looks like: </p>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/hd-QKMHDcCA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 <p>On my lab setup, the workflow takes less than 4mn to complete.</p>
-<h2>3 Adding and Modifying a Service</h2>
+<h1>3 Adding and Modifying a Service</h1>
 <p>The playbook we call in the Job Template is indempotent: when I add a whole new service, running the same workflow just adds what's needed without doing anything to our already provisioned service. </p>
 <p>In the video below, I add a new service <code>app2</code> but also modify the <code>version</code> value of the <code>app1</code> service. In the Tower log we can see that Ansible does only what's needed and leaves what is already configured untouched. </p>
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/XfyPkvEOqSE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/LAYCBPX5pOQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 <p>We can also use git to track changes to the services definitions: </p>
 <p><img alt="Git diff" src="https://automaticdavid.github.io/images/webinar2_git.png"></p>
-<h2>4 Force delete of a VM</h2>
+<h1>4 Force delete of a VM</h1>
 <p>What's cool with Ansible is that the IaC behaviour is based on indempotency of playbooks and definition of state in a source of truth (the inventory in git), as opposed to other tools that need their own statefull reference. This means that I can delete a VM in vCenter and when the Job Template is executed again, it just corrects what's missing (in this lab the IP of the recreated VM changes, but in real life we'd use an IPAM). We are not locked to only one control plane.   </p>
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/K0xLGhgTuhA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/2G7_4Zmd0co" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 <p>We can also run the Job Template in <code>check_mode</code> and do compliance checking. </p>
-<h2>What's next</h2>
+<h1>What's next</h1>
 <p>There's a number of other things we could do from here:  </p>
 <ul>
 <li>Enable <a href="https://docs.ansible.com/ansible-tower/latest/html/userguide/webhooks.html">webhooks</a></li>

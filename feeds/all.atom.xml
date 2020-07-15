@@ -9,7 +9,7 @@ You can find the full replay (in french) at: &lt;br&gt;
 &lt;a href="https://github.com/automaticdavid/demo_vmware/tree/webinar_072020"&gt;github&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;The inventory I'm using is at:&lt;br&gt;
 &lt;a href="https://github.com/automaticdavid/vmware_services/tree/master/paris"&gt;github&lt;/a&gt;&lt;/p&gt;
-&lt;h2&gt;1 Setting up the Inventories in Tower&lt;/h2&gt;
+&lt;h1&gt;1 Setting up the Inventories in Tower&lt;/h1&gt;
 &lt;p&gt;We're using a Tower inventory with 2 sources: one is the project that points to the git inventory "vmware service definition", the other is a vCenter based dynamic inventory:&lt;/p&gt;
 &lt;p&gt;&lt;img alt="Inventory" src="https://automaticdavid.github.io/images/webinar2_inventory.png"&gt;&lt;/p&gt;
 &lt;p&gt;Tower ships with a default vCenter inventory, but for this demo I'm using the latest upstream version. To do this I copied the upstream collection into my own repo at: &lt;a href="https://github.com/automaticdavid/vmware_inventory.git"&gt;https://github.com/automaticdavid/vmware_inventory.git&lt;/a&gt;.&lt;br&gt;
@@ -23,7 +23,7 @@ To run this cleanly, I created a dedicated venv as explained in: (https://docs.a
 The inventory source definition in Tower is a standard "sourced from a project" definition, with an added variable to enable using the custom plugin: &lt;/p&gt;
 &lt;p&gt;&lt;img alt="Credential" src="https://automaticdavid.github.io/images/webinar2_inventory2.png"&gt;&lt;/p&gt;
 &lt;p&gt;This also allows to specify that we're using our custom venv.&lt;/p&gt;
-&lt;h2&gt;2 Provisioning a Service&lt;/h2&gt;
+&lt;h1&gt;2 Provisioning a Service&lt;/h1&gt;
 &lt;p&gt;We start with an empty vCenter and a service definition in git. The definition takes place in services.ini where we add the service &lt;code&gt;app1&lt;/code&gt; to the inventory:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;[services:children]&lt;/span&gt;
 &lt;span class="na"&gt;app1&lt;/span&gt;
@@ -58,23 +58,23 @@ The inventory source definition in Tower is a standard "sourced from a project" 
 &lt;li&gt;Refresh the vCenter dynamic inventory once the VM are provisioned, getting the tags as Tower inventory groups&lt;/li&gt;
 &lt;li&gt;Run a playbook that install the application layer needed on each VM of the services, based on the VM's groups.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Here's a video of what it looks like (better in full screen): &lt;/p&gt;
-&lt;iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/V0hhakK6Uwc" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;
+&lt;p&gt;Here's a video of what it looks like: &lt;/p&gt;
+&lt;iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/hd-QKMHDcCA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;
 
 &lt;p&gt;On my lab setup, the workflow takes less than 4mn to complete.&lt;/p&gt;
-&lt;h2&gt;3 Adding and Modifying a Service&lt;/h2&gt;
+&lt;h1&gt;3 Adding and Modifying a Service&lt;/h1&gt;
 &lt;p&gt;The playbook we call in the Job Template is indempotent: when I add a whole new service, running the same workflow just adds what's needed without doing anything to our already provisioned service. &lt;/p&gt;
 &lt;p&gt;In the video below, I add a new service &lt;code&gt;app2&lt;/code&gt; but also modify the &lt;code&gt;version&lt;/code&gt; value of the &lt;code&gt;app1&lt;/code&gt; service. In the Tower log we can see that Ansible does only what's needed and leaves what is already configured untouched. &lt;/p&gt;
-&lt;iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/XfyPkvEOqSE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;
+&lt;iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/LAYCBPX5pOQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;
 
 &lt;p&gt;We can also use git to track changes to the services definitions: &lt;/p&gt;
 &lt;p&gt;&lt;img alt="Git diff" src="https://automaticdavid.github.io/images/webinar2_git.png"&gt;&lt;/p&gt;
-&lt;h2&gt;4 Force delete of a VM&lt;/h2&gt;
+&lt;h1&gt;4 Force delete of a VM&lt;/h1&gt;
 &lt;p&gt;What's cool with Ansible is that the IaC behaviour is based on indempotency of playbooks and definition of state in a source of truth (the inventory in git), as opposed to other tools that need their own statefull reference. This means that I can delete a VM in vCenter and when the Job Template is executed again, it just corrects what's missing (in this lab the IP of the recreated VM changes, but in real life we'd use an IPAM). We are not locked to only one control plane.   &lt;/p&gt;
-&lt;iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/K0xLGhgTuhA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;
+&lt;iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/2G7_4Zmd0co" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;
 
 &lt;p&gt;We can also run the Job Template in &lt;code&gt;check_mode&lt;/code&gt; and do compliance checking. &lt;/p&gt;
-&lt;h2&gt;What's next&lt;/h2&gt;
+&lt;h1&gt;What's next&lt;/h1&gt;
 &lt;p&gt;There's a number of other things we could do from here:  &lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Enable &lt;a href="https://docs.ansible.com/ansible-tower/latest/html/userguide/webhooks.html"&gt;webhooks&lt;/a&gt;&lt;/li&gt;
